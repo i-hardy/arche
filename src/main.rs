@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+use std::{fs};
 
 pub mod dom;
+pub mod html;
 
 fn main() {
-	let mut children = Vec::new();
-	children.push(dom::text("hello".to_string()));
-	let node_tree = dom::element("body".to_string(), HashMap::new(), children);
+	let html_string = fs::read_to_string("./examples/test.html").expect("Success!");
+	let node_tree = html::parse(html_string);
 	println!("{:?}", node_tree)
 }
