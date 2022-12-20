@@ -2,12 +2,18 @@ use std::fs;
 
 use cairo::{Context, FontSlant, FontWeight, Format, ImageSurface};
 
-use crate::{dom::{Node, NodeType}, style::StyledNode};
+use crate::{dom::NodeType, style::StyledNode, cssom::{Color, Value::{Length, ColorValue}}};
 
 #[derive(Debug)]
 struct Bounds {
     width: i32,
     height: i32,
+}
+
+#[derive(Debug)]
+struct VisualRules {
+	font_size: f64,
+	color: Color,
 }
 
 #[derive(Debug)]
@@ -49,6 +55,7 @@ pub struct Renderer {
     context: Context,
     bounds: Bounds,
     coords: Coordinates,
+		visuals: VisualRules,
 }
 
 impl Renderer {
@@ -61,6 +68,7 @@ impl Renderer {
             context,
             bounds: Bounds { width, height },
             coords: Coordinates { x: 0.0, y: 16.0 },
+						visuals: VisualRules { font_size: 16.0, color: Color { r: 0, g: 0, b: 0, a: 0 } }
         }
     }
 
@@ -68,12 +76,8 @@ impl Renderer {
         self.context.set_source_rgb(1.0, 1.0, 1.0);
         self.context.paint().expect("Paint failed!");
 
-        self.context.set_source_rgb(0.0, 0.0, 0.0);
-
-        let font_size = 16.0;
         self.context
             .select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
-        self.context.set_font_size(font_size);
 				
 				self.walk_node_tree(&root_node);
 				
@@ -83,11 +87,33 @@ impl Renderer {
 					.expect("Couldn't write to png");
     }
 		
-		fn walk_node_tree(&mut self, next_node: &StyledNode) {		
+		fn walk_node_tree(&mut self, next_node: &StyledNode) {
+			let font_size = next_node.specified_values.get("font-size");
+			let color = next_node.specified_values.get("color");
+			
+			match font_size {
+				Some(value) => match value {
+					Length(size, _) => self.visuals.font_size = size.clone().into(),
+					_ => ()
+				}
+				None => ()
+			}
+			
+			match color {
+					Some(value) => match value {
+						ColorValue(color) => self.visuals.color = color.clone(),
+						_ => ()
+					}
+					None => ()
+			}
+			
+			self.context.set_source_rgb(self.visuals.color.r.into(), self.visuals.color.g.into(), self.visuals.color.b.into());
+			self.context.set_font_size(self.visuals.font_size);
+			
 			let should_move = self.render_text(&next_node);
 			
 			if should_move {
-				self.coords.move_down(18.00, &self.bounds);
+				self.coords.move_down(self.visuals.font_size + 2.0, &self.bounds);
 			}
 			
 			if next_node.children.len() > 0 {
@@ -100,7 +126,6 @@ impl Renderer {
 		fn render_text(&self, node: &StyledNode) -> bool {
 			match &node.node.node_type {
 				NodeType::Text(content) => {
-					println!("{:?}", self.coords);
 					self.context.move_to(self.coords.x, self.coords.y);
 					self.context.show_text(content).expect("Writing text failed");
 					return true;

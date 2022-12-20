@@ -1,7 +1,9 @@
 h1.heading--1 {
 	font-size: 20px;
+	color: #ff00ff;
 }
 
 p {
 	font-size: 16px;
+	color: #00ff00;
 }
