@@ -16,6 +16,7 @@ struct Coordinates {
     y: f64,
 }
 
+#[allow(dead_code)]
 impl Coordinates {
     fn move_left(&mut self, increment: f64) {
 			if self.x > 0.0 {
