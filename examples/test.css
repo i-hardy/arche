@@ -7,3 +7,7 @@ p {
 	font-size: 16px;
 	color: #000000;
 }
+
+.small {
+	font-size: 12px;
+}

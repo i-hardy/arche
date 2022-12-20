@@ -17,7 +17,7 @@ impl Parser {
 		while !self.ended() && test(self.next_char()) {
 				result.push(self.consume_char());
 		}
-		return result;
+		result
 	}
 	
 	pub fn consume_char(&mut self) -> char {
@@ -25,7 +25,7 @@ impl Parser {
 		let (_, current_char) = iterable.next().unwrap();
     let (next_position, _) = iterable.next().unwrap_or((1, ' '));
 		self.position += next_position;
-    return current_char;
+    current_char
 	}
 	
 	pub fn next_chars(&self, n: usize) -> String {

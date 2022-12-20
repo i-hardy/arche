@@ -1,3 +1,5 @@
+use std::cmp;
+
 use crate::parse::{
     cssom::{Declaration, Rule, Selector, SimpleSelector, Value, Unit, Color, StyleSheet},
     parser::Parser,
@@ -53,7 +55,7 @@ impl CSSParser {
                 c => panic!("Unexpected character {} in selector list", c),
             }
         }
-				selectors.sort_by(|a, b| b.specificity().cmp(&a.specificity()));
+				selectors.sort_by_key(|b| cmp::Reverse(b.specificity()));
         selectors
     }
 
@@ -83,7 +85,7 @@ impl CSSParser {
                 _ => break,
             }
         }
-        return selector;
+        selector
     }
 
     fn parse_declarations(&mut self) -> Vec<Declaration> {
@@ -111,7 +113,7 @@ impl CSSParser {
 
         Declaration {
             name: property_name,
-            value: value,
+            value,
         }
     }
 
@@ -132,10 +134,7 @@ impl CSSParser {
     }
 
     fn parse_float(&mut self) -> f32 {
-        let s = self.parser.consume_while(|c| match c {
-            '0'..='9' | '.' => true,
-            _ => false,
-        });
+        let s = self.parser.consume_while(|c| matches!(c, '0'..='9' | '.'));
         s.parse().unwrap()
     }
 
@@ -165,8 +164,5 @@ impl CSSParser {
 }
 
 fn valid_identifier_char(c: char) -> bool {
-    match c {
-        'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_' => true,
-        _ => false,
-    }
+	matches!(c, 'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_')
 }

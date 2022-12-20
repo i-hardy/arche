@@ -41,7 +41,7 @@ fn specified_values(element: &ElementData, stylesheet: &StyleSheet) -> PropertyM
             values.insert(declaration.name.clone(), declaration.value.clone());
         }
     }
-    return values;
+    values
 }
 
 fn matching_rules<'a>(element: &ElementData, stylesheet: &'a StyleSheet) -> Vec<MatchedRule<'a>> {
@@ -87,5 +87,5 @@ fn matches_simple_selector(element: &ElementData, selector: &SimpleSelector) -> 
         return false;
     }
 
-    return true;
+    true
 }

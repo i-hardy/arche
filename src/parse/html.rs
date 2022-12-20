@@ -69,7 +69,7 @@ impl HTMLParser {
     assert!(self.parse_tag_name() == tag_name);
     assert!(self.parser.consume_char() == '>');
 		
-		return dom::element(tag_name, attributes, children);
+		dom::element(tag_name, attributes, children)
 	}
 	
 	fn parse_nodes(&mut self) -> Vec<dom::Node> {
@@ -81,7 +81,7 @@ impl HTMLParser {
 			}
 			nodes.push(self.parse_node());
 		}
-		return nodes;
+		nodes
 	}
 	
 	fn parse_attributes(&mut self) -> dom::AttrMap {
@@ -94,14 +94,14 @@ impl HTMLParser {
 				let (name, value) = self.parse_attr();
 				attributes.insert(name, value);
 		}
-		return attributes;
+		attributes
 	}
 	
 	fn parse_attr(&mut self) -> (String, String) {
 		let name = self.parse_tag_name();
 		assert!(self.parser.consume_char() == '=');
 		let value = self.parse_attr_value();
-		return (name, value);
+		(name, value)
 	}
 	
 	fn parse_attr_value(&mut self) -> String {
@@ -110,13 +110,10 @@ impl HTMLParser {
 		
 		let value = self.parser.consume_while(|c| c != open_quote);
 		assert!(self.parser.consume_char() == open_quote);
-		return value;
+		value
 	}
 	
 	fn parse_tag_name(&mut self) -> String {
-		self.parser.consume_while(|character| match character {
-			'a'..='z' | 'A'..='Z' | '0'..='9' => true,
-			_ => false
-		})
+		self.parser.consume_while(|character| matches!(character, 'a'..='z' | 'A'..='Z' | '0'..='9'))
 	}
 }
