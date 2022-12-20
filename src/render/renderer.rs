@@ -1,8 +1,6 @@
-use std::fs;
+use cairo::{Context, FontSlant, FontWeight};
 
-use cairo::{Context, FontSlant, FontWeight, Format, ImageSurface};
-
-use crate::{dom::NodeType, style::StyledNode, cssom::{Color, Value::{Length, ColorValue}}};
+use crate::parse::{dom::NodeType, style::StyledNode, cssom::{Color, Value::{Length, ColorValue}}};
 
 #[derive(Debug)]
 struct Bounds {
@@ -50,29 +48,24 @@ impl Coordinates {
 }
 
 #[derive(Debug)]
-pub struct Renderer {
-    surface: ImageSurface,
-    context: Context,
+pub struct Renderer<'a> {
+    context: &'a Context,
     bounds: Bounds,
     coords: Coordinates,
 		visuals: VisualRules,
 }
 
-impl Renderer {
-    pub fn new(width: i32, height: i32) -> Renderer {
-        let surface = ImageSurface::create(Format::ARgb32, width, height)
-            .expect("Could not create a surface");
-        let context = Context::new(&surface).expect("Could not create context!");
+impl Renderer<'_> {
+    pub fn new(context: &Context, width: i32, height: i32, ) -> Renderer {
         Renderer {
-            surface,
             context,
             bounds: Bounds { width, height },
-            coords: Coordinates { x: 0.0, y: 16.0 },
-						visuals: VisualRules { font_size: 16.0, color: Color { r: 0, g: 0, b: 0, a: 0 } }
+            coords: Coordinates { x: 0.0, y: 0.0 },
+						visuals: VisualRules { font_size: 0.0, color: Color { r: 0, g: 0, b: 0, a: 0 } }
         }
     }
 
-    pub fn to_image(&mut self, root_node: StyledNode) {
+    pub fn draw(&mut self, root_node: StyledNode) {
         self.context.set_source_rgb(1.0, 1.0, 1.0);
         self.context.paint().expect("Paint failed!");
 
@@ -80,11 +73,6 @@ impl Renderer {
             .select_font_face("Sans", FontSlant::Normal, FontWeight::Normal);
 				
 				self.walk_node_tree(&root_node);
-				
-				let mut file = fs::File::create("output.png")
-					.expect("Couldn't create file.");
-				self.surface.write_to_png(&mut file)
-					.expect("Couldn't write to png");
     }
 		
 		fn walk_node_tree(&mut self, next_node: &StyledNode) {
@@ -93,7 +81,10 @@ impl Renderer {
 			
 			match font_size {
 				Some(value) => match value {
-					Length(size, _) => self.visuals.font_size = size.clone().into(),
+					Length(size, _) => {
+						self.visuals.font_size = size.clone().into();
+						self.coords.move_down(self.visuals.font_size, &self.bounds);
+					},
 					_ => ()
 				}
 				None => ()
@@ -106,15 +97,11 @@ impl Renderer {
 					}
 					None => ()
 			}
-			
+						
 			self.context.set_source_rgb(self.visuals.color.r.into(), self.visuals.color.g.into(), self.visuals.color.b.into());
 			self.context.set_font_size(self.visuals.font_size);
 			
-			let should_move = self.render_text(&next_node);
-			
-			if should_move {
-				self.coords.move_down(self.visuals.font_size + 2.0, &self.bounds);
-			}
+			self.render_text(&next_node);
 			
 			if next_node.children.len() > 0 {
 				for child in next_node.children.iter() {

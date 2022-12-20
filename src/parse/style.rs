@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::{
+use crate::parse::{
+    dom::{ElementData, Node, NodeType::Element},
     cssom::{Rule, Selector, SimpleSelector, Specificity, StyleSheet, Value},
-    dom::{NodeType::Element, ElementData, Node},
 };
 
 type PropertyMap = HashMap<String, Value>;

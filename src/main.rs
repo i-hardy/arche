@@ -1,25 +1,57 @@
 extern crate cairo;
+extern crate gtk;
 
 use std::fs;
+use cairo::Context;
+use gtk::prelude::*;
+use gtk::DrawingArea;
 
-pub mod css;
-pub mod cssom;
-pub mod dom;
-pub mod html;
-pub mod parser;
+use parse::{html, css, style};
+use render::renderer::Renderer;
+
+pub mod parse;
 pub mod render;
-pub mod style;
 
-fn main() {
-    let html_string = fs::read_to_string("./examples/test.html").expect("Failed to read file");
+fn build_ui(application: &gtk::Application) {
+	drawable(application, 500, 500, |_, cr| {
+		let html_string = fs::read_to_string("./examples/test.html").expect("Failed to read file");
     let node_tree = html::parse(html_string);
 
     let css_string = fs::read_to_string("./examples/test.css").expect("Failed to read file");
     let stylesheet = css::parse(css_string);
 
     let style_tree = style::style_tree(&node_tree, &stylesheet);
+		
+		let mut renderer = Renderer::new(cr, 500, 500);
+		
+		renderer.draw(style_tree);
 
-    let mut renderer = render::Renderer::new(600, 600);
+		Inhibit(false)
+});
+}
 
-    renderer.to_image(style_tree)
+fn main() {	
+		let application = gtk::Application::new(
+			Some("com.github.i-hardy.arche"),
+			Default::default(),
+		);
+
+		application.connect_activate(build_ui);
+
+		application.run();
+}
+
+pub fn drawable<F>(application: &gtk::Application, width: i32, height: i32, draw_fn: F)
+where
+    F: Fn(&DrawingArea, &Context) -> Inhibit + 'static,
+{
+    let window = gtk::ApplicationWindow::new(application);
+    let drawing_area = Box::new(DrawingArea::new)();
+
+    drawing_area.connect_draw(draw_fn);
+
+    window.set_default_size(width, height);
+
+    window.add(&drawing_area);
+    window.show_all();
 }

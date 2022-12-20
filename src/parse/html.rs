@@ -1,6 +1,6 @@
 use std::{collections::HashMap};
 
-use crate::{dom, parser::Parser};
+use crate::parse::{dom, parser::Parser};
 
 pub fn parse(source: String) -> dom::Node {
 	let mut nodes = HTMLParser::new(source).parse_nodes();

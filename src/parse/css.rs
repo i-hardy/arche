@@ -1,4 +1,4 @@
-use crate::{
+use crate::parse::{
     cssom::{Declaration, Rule, Selector, SimpleSelector, Value, Unit, Color, StyleSheet},
     parser::Parser,
 };
