@@ -2,7 +2,7 @@ use std::fs;
 
 use cairo::{Context, FontSlant, FontWeight, Format, ImageSurface};
 
-use crate::dom::{Node, NodeType};
+use crate::{dom::{Node, NodeType}, style::StyledNode};
 
 #[derive(Debug)]
 struct Bounds {
@@ -64,7 +64,7 @@ impl Renderer {
         }
     }
 
-    pub fn to_image(&mut self, root_node: Node) {
+    pub fn to_image(&mut self, root_node: StyledNode) {
         self.context.set_source_rgb(1.0, 1.0, 1.0);
         self.context.paint().expect("Paint failed!");
 
@@ -83,7 +83,7 @@ impl Renderer {
 					.expect("Couldn't write to png");
     }
 		
-		fn walk_node_tree(&mut self, next_node: &Node) {		
+		fn walk_node_tree(&mut self, next_node: &StyledNode) {		
 			let should_move = self.render_text(&next_node);
 			
 			if should_move {
@@ -97,8 +97,8 @@ impl Renderer {
 			}
 		}
 		
-		fn render_text(&self, node: &Node) -> bool {
-			match &node.node_type {
+		fn render_text(&self, node: &StyledNode) -> bool {
+			match &node.node.node_type {
 				NodeType::Text(content) => {
 					println!("{:?}", self.coords);
 					self.context.move_to(self.coords.x, self.coords.y);

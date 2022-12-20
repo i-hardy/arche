@@ -1,4 +1,4 @@
-use std::collections::{HashMap};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
 pub struct Node {
@@ -37,4 +37,17 @@ pub fn element(tag_name: String, attributes: AttrMap, children: Vec<Node>) -> No
 			attributes,	
 		})
 	}
+}
+
+impl ElementData {
+		pub fn id(&self) -> Option<&String> {
+			self.attributes.get("id")
+		}
+		
+		pub fn classes(&self) -> HashSet<&str> {
+			match self.attributes.get("class") {
+				Some(classlist) => classlist.split(' ').collect(),
+				None => HashSet::new()
+			}
+		}
 }

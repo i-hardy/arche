@@ -53,6 +53,7 @@ impl CSSParser {
                 c => panic!("Unexpected character {} in selector list", c),
             }
         }
+				selectors.sort_by(|a, b| b.specificity().cmp(&a.specificity()));
         selectors
     }
 

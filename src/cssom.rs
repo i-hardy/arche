@@ -27,19 +27,19 @@ pub struct Declaration {
 	pub value: Value,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Value {
 	Keyword(String),
 	Length(f32, Unit),
 	ColorValue(Color),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Unit {
 	Px,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Color {
 	pub r: u8,
 	pub g: u8,
@@ -47,6 +47,14 @@ pub struct Color {
 	pub a: u8,
 }
 
-pub fn rule(selectors: Vec<Selector>, declarations: Vec<Declaration>) -> Rule {
-	Rule { selectors, declarations }
+pub type Specificity = (usize, usize, usize);
+
+impl Selector {
+		pub fn specificity(&self) -> Specificity {
+				let Selector::Simple(ref simple) = *self;
+				let ids = simple.id.iter().count();
+				let classes = simple.class.len();
+				let tag_names = simple.tag_name.iter().count();
+				(ids, classes, tag_names)
+		}
 }
