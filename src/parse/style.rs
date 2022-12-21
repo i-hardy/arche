@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::parse::{
-    dom::{ElementData, Node, NodeType::Element},
+    dom::{ElementData, Node, NodeType::{Element,Text}},
     cssom::{Rule, Selector, SimpleSelector, Specificity, StyleSheet, Value},
 };
 
@@ -16,19 +16,30 @@ pub struct StyledNode<'a> {
 
 type MatchedRule<'a> = (Specificity, &'a Rule);
 
-pub fn style_tree<'a>(root: &'a Node, stylesheet: &'a StyleSheet) -> StyledNode<'a> {
+pub fn style_tree<'a>(node: &'a Node, stylesheet: &'a StyleSheet, parent_node: Option<&'a Node>) -> StyledNode<'a> {
     StyledNode {
-        node: root,
-        specified_values: match root.node_type {
-            Element(ref element) => specified_values(element, stylesheet),
-            _ => HashMap::new(),
-        },
-        children: root
+        node,
+        specified_values: determine_specified_values(node, stylesheet, parent_node),
+        children: node
             .children
             .iter()
-            .map(|child| style_tree(child, stylesheet))
+            .map(|child| style_tree(child, stylesheet, Some(node)))
             .collect(),
     }
+}
+
+fn determine_specified_values<'a>(node: &'a Node, stylesheet: &'a StyleSheet, parent_node: Option<&'a Node>) -> PropertyMap {
+	match node.node_type {
+			Element(ref element) => specified_values(element, stylesheet),
+			Text(_) => match parent_node {
+				Some(node) => match node.node_type {
+					Element(ref element) => specified_values(element, stylesheet),
+					_ => HashMap::new(),
+				}
+				None => HashMap::new()
+			},
+			_ => HashMap::new(),
+	}
 }
 
 fn specified_values(element: &ElementData, stylesheet: &StyleSheet) -> PropertyMap {

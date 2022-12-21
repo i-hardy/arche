@@ -39,7 +39,7 @@ pub enum Unit {
     Px,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Color {
     pub r: u8,
     pub g: u8,
@@ -56,16 +56,5 @@ impl Selector {
         let classes = simple.class.len();
         let tag_names = simple.tag_name.iter().count();
         (ids, classes, tag_names)
-    }
-}
-
-impl Default for Color {
-    fn default() -> Color {
-        Color {
-            r: 0,
-            g: 0,
-            b: 0,
-            a: 0,
-        }
     }
 }

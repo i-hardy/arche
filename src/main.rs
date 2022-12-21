@@ -20,7 +20,7 @@ fn build_ui(application: &gtk::Application) {
     let css_string = fs::read_to_string("./examples/test.css").expect("Failed to read file");
     let stylesheet = css::parse(css_string);
 
-    let style_tree = style::style_tree(&node_tree, &stylesheet);
+    let style_tree = style::style_tree(&node_tree, &stylesheet, None);
 		
 		let mut renderer = Renderer::new(cr, 500, 500);
 		

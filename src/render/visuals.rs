@@ -31,7 +31,7 @@ impl Block<'_> {
 			}
 		}
 
-    pub fn paint(&self, context: &Context) -> () {
+    pub fn paint(&self, context: &Context) {
 			let (r, g, b) = self.visuals.color_to_rgb();
 			context.set_source_rgb(r, g, b);
 			context.set_font_size(self.visuals.font_size);
@@ -39,7 +39,10 @@ impl Block<'_> {
     }
 		
 		pub fn dimensions(&self) -> Dimensions {
-			Dimensions { x: 0.0, y: self.visuals.font_size }
+			match self.node.node.node_type {
+				NodeType::Text(_) => Dimensions { x: 0.0, y: self.visuals.font_size },
+				_ => Dimensions { x: 0.0, y: 0.0 }
+			}
 		}
 		
 		fn render_text(&self, context: &Context) -> bool {
@@ -47,7 +50,7 @@ impl Block<'_> {
 			match &node.node.node_type {
 					NodeType::Text(content) => {
 							context
-									.show_text(&content)
+									.show_text(content)
 									.expect("Writing text failed");
 							true
 					}

@@ -72,15 +72,13 @@ impl Renderer<'_> {
     fn walk_node_tree(&mut self, next_node: &StyledNode) {
 				let painting_block = Block::new(next_node);
 				let block_dimensions = painting_block.dimensions();
-				
-				println!("{:?}", painting_block);
-				println!("{:?}", block_dimensions);
-				
+								
 				self.coords.move_down(block_dimensions.y, &self.bounds);
+				self.context.move_to(self.coords.x, self.coords.y);
 				
 				println!("{:?}", self.coords);
 				
-				painting_block.paint(&self.context);
+				painting_block.paint(self.context);
 				
         if !next_node.children.is_empty() {
             for child in next_node.children.iter() {
