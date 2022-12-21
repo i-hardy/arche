@@ -1,24 +1,13 @@
 use cairo::{Context, FontSlant, FontWeight};
 
-use crate::parse::{
-    cssom::{
-        Color,
-        Value::{ColorValue, Length},
-    },
-    dom::NodeType,
-    style::StyledNode,
-};
+use crate::parse::{style::StyledNode};
+
+use super::visuals::Block;
 
 #[derive(Debug)]
 struct Bounds {
     width: i32,
     height: i32,
-}
-
-#[derive(Debug)]
-struct VisualRules {
-    font_size: f64,
-    color: Color,
 }
 
 #[derive(Debug)]
@@ -59,7 +48,6 @@ pub struct Renderer<'a> {
     context: &'a Context,
     bounds: Bounds,
     coords: Coordinates,
-    visuals: VisualRules,
 }
 
 impl Renderer<'_> {
@@ -68,15 +56,6 @@ impl Renderer<'_> {
             context,
             bounds: Bounds { width, height },
             coords: Coordinates { x: 0.0, y: 0.0 },
-            visuals: VisualRules {
-                font_size: 0.0,
-                color: Color {
-                    r: 0,
-                    g: 0,
-                    b: 0,
-                    a: 0,
-                },
-            },
         }
     }
 
@@ -91,44 +70,22 @@ impl Renderer<'_> {
     }
 
     fn walk_node_tree(&mut self, next_node: &StyledNode) {
-        let font_size = next_node.specified_values.get("font-size");
-        let color = next_node.specified_values.get("color");
+				let painting_block = Block::new(next_node);
+				let block_dimensions = painting_block.dimensions();
 				
-				if let Some(Length(size, _)) = font_size {
-					self.visuals.font_size = (*size).into();
-          self.coords.move_down(self.visuals.font_size, &self.bounds);
-				}
-
-        if let Some(ColorValue(color)) = color {
-					self.visuals.color = color.clone();
-				}
-
-        self.context.set_source_rgb(
-            self.visuals.color.r.into(),
-            self.visuals.color.g.into(),
-            self.visuals.color.b.into(),
-        );
-        self.context.set_font_size(self.visuals.font_size);
-
-        self.render_text(next_node);
-
+				println!("{:?}", painting_block);
+				println!("{:?}", block_dimensions);
+				
+				self.coords.move_down(block_dimensions.y, &self.bounds);
+				
+				println!("{:?}", self.coords);
+				
+				painting_block.paint(&self.context);
+				
         if !next_node.children.is_empty() {
             for child in next_node.children.iter() {
                 self.walk_node_tree(child);
             }
-        }
-    }
-
-    fn render_text(&self, node: &StyledNode) -> bool {
-        match &node.node.node_type {
-            NodeType::Text(content) => {
-                self.context.move_to(self.coords.x, self.coords.y);
-                self.context
-                    .show_text(content)
-                    .expect("Writing text failed");
-                true
-            }
-            _ => false,
         }
     }
 }
