@@ -2,7 +2,7 @@ use cairo::Context;
 
 use crate::parse::{
     cssom::{Color, Value},
-    style::StyledNode, dom::NodeType,
+    style::StyledNode, dom::{NodeType, Node},
 };
 
 #[derive(Debug)]
@@ -36,7 +36,6 @@ pub struct Block<'a> {
 
 impl Block<'_> {
     pub fn new<'a>(node: &'a StyledNode) -> Block<'a> {
-			println!("{:?}", node);
 			Block {
 				node,
 				visuals: VisualRules::new(node)
@@ -53,6 +52,7 @@ impl Block<'_> {
 		pub fn dimensions(&self) -> Dimensions {
 			match self.node.node.node_type {
 				NodeType::Text(_) => Dimensions { x: 0.0, y: self.visuals.font_size, top_y: 0.0, bottom_y: 0.0 },
+				NodeType::Element(_) => Dimensions { x: 0.0, y: 0.0, top_y: self.visuals.padding.top, bottom_y: self.visuals.padding.bottom },
 				_ => Dimensions { x: 0.0, y: 0.0, top_y: 0.0, bottom_y: 0.0 }
 			}
 		}
