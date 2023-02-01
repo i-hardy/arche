@@ -9,12 +9,23 @@ use crate::parse::{
 pub struct Dimensions {
 	pub x: f64,
 	pub y: f64,
+	pub top_y: f64,
+	pub bottom_y: f64,
+}
+
+#[derive(Debug)]
+struct Padding {
+    top: f64,
+		bottom: f64,
+		left: f64,
+		right: f64,
 }
 
 #[derive(Debug)]
 struct VisualRules {
     font_size: f64,
     color: Color,
+		padding: Padding,
 }
 
 #[derive(Debug)]
@@ -25,6 +36,7 @@ pub struct Block<'a> {
 
 impl Block<'_> {
     pub fn new<'a>(node: &'a StyledNode) -> Block<'a> {
+			println!("{:?}", node);
 			Block {
 				node,
 				visuals: VisualRules::new(node)
@@ -40,8 +52,8 @@ impl Block<'_> {
 		
 		pub fn dimensions(&self) -> Dimensions {
 			match self.node.node.node_type {
-				NodeType::Text(_) => Dimensions { x: 0.0, y: self.visuals.font_size },
-				_ => Dimensions { x: 0.0, y: 0.0 }
+				NodeType::Text(_) => Dimensions { x: 0.0, y: self.visuals.font_size, top_y: 0.0, bottom_y: 0.0 },
+				_ => Dimensions { x: 0.0, y: 0.0, top_y: 0.0, bottom_y: 0.0 }
 			}
 		}
 		
@@ -59,20 +71,26 @@ impl Block<'_> {
 	}
 }
 
+fn get_length_or_default(maybe_length: &Option<&Value>) -> f64 {
+	match maybe_length {
+		Some(Value::Length(size, _)) => (*size).into(),
+		_ => 0.0,
+	}
+}
+
 impl VisualRules {
     fn new(node: &StyledNode) -> VisualRules {
         let font_size = node.specified_values.get("font-size");
         let color = node.specified_values.get("color");
+				
 
         VisualRules {
-            font_size: match font_size {
-                Some(Value::Length(size, _)) => (*size).into(),
-                _ => 0.0,
-            },
+            font_size: get_length_or_default(&font_size),
             color: match color {
 								Some(Value::ColorValue(color)) => color.clone(),
 								_ => Color::default()
 						},
+						padding: Padding::new(&node),
         }
     }
 		
@@ -80,3 +98,20 @@ impl VisualRules {
 			(self.color.r.into(), self.color.g.into(), self.color.b.into())
 		}
 }
+
+impl Padding {
+		fn new(node: &StyledNode) -> Padding {
+				let top = node.specified_values.get("padding-top");
+				let bottom = node.specified_values.get("padding-bottom");
+				let left = node.specified_values.get("padding-left");
+				let right = node.specified_values.get("padding-right");
+				
+				Padding {
+					top: get_length_or_default(&top),
+					bottom: get_length_or_default(&bottom),
+					left: get_length_or_default(&left),
+					right: get_length_or_default(&right),
+				}
+		}
+}
+

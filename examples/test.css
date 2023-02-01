@@ -1,6 +1,8 @@
 h1.heading--1 {
 	font-size: 36px;
 	color: #ff00ff;
+	padding-top: 8px;
+	padding-bottom: 8px;
 }
 
 p {

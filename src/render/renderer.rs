@@ -76,8 +76,6 @@ impl Renderer<'_> {
 				self.coords.move_down(block_dimensions.y, &self.bounds);
 				self.context.move_to(self.coords.x, self.coords.y);
 				
-				println!("{:?}", self.coords);
-				
 				painting_block.paint(self.context);
 				
         if !next_node.children.is_empty() {
