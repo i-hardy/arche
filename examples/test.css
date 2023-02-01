@@ -8,6 +8,8 @@ h1.heading--1 {
 p {
 	font-size: 16px;
 	color: #000000;
+	padding-left: 12px;
+	padding-bottom: 4px;
 }
 
 .small {
