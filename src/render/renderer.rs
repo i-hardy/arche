@@ -72,8 +72,8 @@ impl Renderer<'_> {
     fn walk_node_tree(&mut self, next_node: &StyledNode) {
 				let painting_block = Block::new(next_node);
 				let block_dimensions = painting_block.dimensions();
-								
-				self.coords.move_down(block_dimensions.y + block_dimensions.top_y, &self.bounds);
+
+				self.coords.move_down(block_dimensions.inner_box.y + block_dimensions.outer_box.top_y, &self.bounds);
 				self.context.move_to(self.coords.x, self.coords.y);
 				
 				painting_block.paint(self.context);
@@ -83,6 +83,6 @@ impl Renderer<'_> {
                 self.walk_node_tree(child);
             }
         }
-				self.coords.move_down(block_dimensions.bottom_y, &self.bounds);
+				self.coords.move_down(block_dimensions.outer_box.bottom_y, &self.bounds);
     }
 }

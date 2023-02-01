@@ -2,30 +2,30 @@ use cairo::Context;
 
 use crate::parse::{
     cssom::{Color, Value},
-    style::StyledNode, dom::{NodeType, Node},
+    style::StyledNode, dom::{NodeType},
 };
 
-#[derive(Debug)]
+use super::boxes::{InnerBox, OuterBox};
+
+#[derive(Debug, Default)]
 pub struct Dimensions {
-	pub x: f64,
-	pub y: f64,
-	pub top_y: f64,
-	pub bottom_y: f64,
+	pub inner_box: InnerBox,
+	pub outer_box: OuterBox,
 }
 
 #[derive(Debug)]
-struct Padding {
-    top: f64,
-		bottom: f64,
-		left: f64,
-		right: f64,
+pub struct Padding {
+    pub top: f64,
+		pub bottom: f64,
+		pub left: f64,
+		pub right: f64,
 }
 
 #[derive(Debug)]
-struct VisualRules {
-    font_size: f64,
-    color: Color,
-		padding: Padding,
+pub struct VisualRules {
+    pub font_size: f64,
+    pub color: Color,
+		pub padding: Padding,
 }
 
 #[derive(Debug)]
@@ -51,9 +51,9 @@ impl Block<'_> {
 		
 		pub fn dimensions(&self) -> Dimensions {
 			match self.node.node.node_type {
-				NodeType::Text(_) => Dimensions { x: 0.0, y: self.visuals.font_size, top_y: 0.0, bottom_y: 0.0 },
-				NodeType::Element(_) => Dimensions { x: 0.0, y: 0.0, top_y: self.visuals.padding.top, bottom_y: self.visuals.padding.bottom },
-				_ => Dimensions { x: 0.0, y: 0.0, top_y: 0.0, bottom_y: 0.0 }
+				NodeType::Text(_) => Dimensions { outer_box: OuterBox::default(), inner_box: InnerBox::new(&self.visuals) },
+				NodeType::Element(_) => Dimensions { outer_box: OuterBox::new(&self.visuals), inner_box: InnerBox::default() },
+				_ => Dimensions::default(),
 			}
 		}
 		
